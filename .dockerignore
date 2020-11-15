@@ -1,0 +1,5 @@
+storage/logs
+vendor
+.dockerignore
+.gitignore
+storage/db-data

@@ -1,0 +1,65 @@
+version: "3"
+services: 
+    questions_api:
+        build: 
+            context: .
+        container_name: questions_api
+        volumes: 
+            - .:/usr/src/app
+        depends_on: 
+            - questions_maria_db
+        working_dir: /usr/src/app
+        environment: 
+            SERVICE_NAME: laravel
+            DB_CONNECTION: mysql
+            DB_DRIVER: mysql
+            DB_HOST: questions_maria_db
+            DB_PORT: 3306
+            DB_USERNAME: root
+            DB_PASSWORD: questions_password
+            DB_DATABASE: questions
+            APP_KEY: base64:enpOQqtzWTZaW6YYNgze2wcZy2gSoqjJR9/bPy53h+I=
+            APP_DEBUG: 'true'
+            JWT_SECRET: yLGHEEOscVSaJWGIGuBn0In3ZR2uWtx4yBJMaQ28GlBDh0DMSYqn3wbWb453Ame8
+            JWT_TTL: 3000
+        networks: 
+            - app_network
+    
+    questions_nginx:
+        build: 
+            context: ./docker-nginx/.
+        container_name: questions_nginx
+        volumes: 
+            - "./public:/usr/src/app/public"
+        environment: 
+            NGINX_FPM_HOST: questions_api
+            NGINX_ROOT: /usr/src/app/public
+        ports: 
+            - "8001:80"
+        depends_on: 
+            - questions_api
+        networks: 
+            - app_network
+    
+    questions_maria_db:
+        image: mariadb
+        restart: always
+        container_name: questions_maria_db
+        environment: 
+            MYSQL_DATABASE: questions
+            MYSQL_ROOT_PASSWORD: questions_password
+            MYSQL_USER: questions_user
+            MYSQL_PASSWORD: questions_password
+        ports: 
+            - "3316:3306"
+        volumes: 
+            - "./storage/db-data:/var/lib/mysql"
+        networks: 
+            - app_network
+            
+networks: 
+    app_network:
+        driver: bridge          
+        
+volumes: 
+    mongodata:
